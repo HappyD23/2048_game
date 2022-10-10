@@ -1,164 +1,300 @@
+const URL = 'https://fe.it-academy.by/AjaxStringStorage2.php';
+const PROJECT_NAME = 'SHVEIKUS_2048';
+
+const colorsBack = {
+    2: 'rgba(208, 253, 208, 0.09)',
+    4: 'rgba(208, 253, 208, 0.18)',
+    8: 'rgba(208, 253, 208, 0.27)',
+    16: 'rgba(208, 253, 208, 0.36)',
+    32: 'rgba(208, 253, 208, 0.45)',
+    64: 'rgba(208, 253, 208, 0.54)',
+    128: 'rgba(208, 253, 208, 0.63)',
+    256: 'rgba(208, 253, 208, 0.72)',
+    512: 'rgba(208, 253, 208, 0.81)',
+    1024: 'rgba(208, 253, 208, 0.9)',
+    2048: 'rgba(208, 253, 208, 0.99)'
+}
+
+const colors ={
+    2: 'rgba(208, 253, 208, 0.99)',
+    4: 'rgba(208, 253, 208, 0.9)',
+    8: 'rgba(208, 253, 208, 0.81)',
+    16: 'rgba(208, 253, 208, 0.72)',
+    32: 'rgba(208, 253, 208, 0.63)',
+    64: 'rgba(208, 253, 208, 0.54)',
+    128: 'rgba(208, 253, 208, 0.45)',
+    256: 'rgba(208, 253, 208, 0.36)',
+    512: 'rgba(208, 253, 208, 0.27)',
+    1024: 'rgba(208, 253, 208, 0.18)',
+    2048: 'rgba(208, 253, 208, 0.09)'
+}
+
 document.addEventListener('DOMContentLoaded', ()=>{
+   
     const gridDisplay = document.querySelector('.grid');
     const scoreDisplay = document.getElementById('score');
-    const resultDisplay = document.getElementById('');
-    const width=4;
-    let squares=[];
-    let score = 0;
+    const resultDisplay = document.getElementById('result');
+    const newGameButton = document.getElementById('new-game');
 
-    //создаем поле;
+    const clickAudio=new Audio('moveCell2.mp3');
+    clickSoundInit();
 
-    function createBoard() {
-        for (let i=0; i<width*width; i++){
-            let square = document.createElement('div');
-            square.innerHTML="0";
-            gridDisplay.appendChild(square);
-            squares.push(square);
-        }
-        generate();
-        generate();
+    function clickSoundInit() {
+        clickAudio.play(); 
+        clickAudio.pause(); 
     }
 
-    createBoard();
+    function clickSound() {
+        clickAudio.currentTime=0; 
+        clickAudio.play();
+    }
+
+    let squares = [
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0]
+    ];
+    let score = 0;
+
+    function startNewGame() {
+        score = 0;
+
+        clearBoard();
+
+        generate();
+        generate();
+
+        render();
+    }
+
+    startNewGame();
+
+    function clearBoard() {
+        gridDisplay.replaceChildren();
+        squares = [
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0]
+        ];
+    }
+
+    function render() {
+        const squareDivs = [];
+
+        for (let r = 0; r < squares.length; r++) {
+            for (let c = 0; c < squares[r].length; c++) {
+                const squareDiv = document.createElement('div');
+
+                squareDiv.innerHTML = squares[r][c] || "";
+                squareDiv.style.backgroundColor = colorsBack[squares[r][c]];
+                squareDiv.style.color = colors[squares[r][c]];
+                squareDivs.push(squareDiv);
+            }
+        }
+
+        scoreDisplay.innerHTML = score;
+        gridDisplay.replaceChildren(...squareDivs);
+    }
 
 
     //generate random number
-
     function generate() {
-        let randomNumber = Math.floor(Math.random()*squares.length);
-        if (squares[randomNumber].innerHTML==0) {
-            squares[randomNumber].innerHTML = 2;
-            checkForGameOver();
-        } 
-        else generate()
-    }
+        let randomNumberRow = Math.floor(Math.random() * squares.length);
+        let randomNumberColumn = Math.floor(Math.random() * squares[randomNumberRow].length);
 
-    //move right
-
-    function moveRight() {
-        for(let i=0; i<16; i++) {
-            if (i % 4 ==0 ) {
-                let totalOne = squares[i].innerHTML;
-                let totalTwo = squares[i+1].innerHTML;
-                let totalThree = squares[i+2].innerHTML;
-                let totalFour = squares[i+3].innerHTML;
-                let row =[parseInt(totalOne), parseInt(totalTwo), parseInt(totalThree), parseInt(totalFour)]
-                
-                let filteredRow = row.filter(num => num);
-                let missing = 4 - filteredRow.length;
-                let zeroes = Array(missing).fill(0);
-                let newRow = zeroes.concat(filteredRow);
-                
-                squares[i].innerHTML = newRow[0];
-                squares[i+1].innerHTML = newRow[1];
-                squares[i+2].innerHTML = newRow[2];
-                squares[i+3].innerHTML = newRow[3];
-
-            }
+        if (squares[randomNumberRow][randomNumberColumn] === 0) {
+            squares[randomNumberRow][randomNumberColumn] = Math.random() > 0.5 ? 2 : 4;
+        } else if (!checkBoardFull()) {
+            generate();
         }
     }
-   
 
-    //move left
-
-    function moveLeft() {
-        for(let i=0; i<16; i++) {
-            if (i % 4 ==0 ) {
-                let totalOne = squares[i].innerHTML;
-                let totalTwo = squares[i+1].innerHTML;
-                let totalThree = squares[i+2].innerHTML;
-                let totalFour = squares[i+3].innerHTML;
-                let row =[parseInt(totalOne), parseInt(totalTwo), parseInt(totalThree), parseInt(totalFour)]
-                                
-                let filteredRow = row.filter(num => num);
-                let missing = 4 - filteredRow.length;
-                let zeroes = Array(missing).fill(0);
-                let newRow = filteredRow.concat(zeroes);
-                
-                squares[i].innerHTML = newRow[0];
-                squares[i+1].innerHTML = newRow[1];
-                squares[i+2].innerHTML = newRow[2];
-                squares[i+3].innerHTML = newRow[3];
-
+    function checkBoardFull() {
+        for (let r = 0; r < squares.length; r++) {
+            for (let c = 0; c < squares[r].length; c++) {
+                if (squares[r][c] === 0) {
+                    return false;
+                }
             }
+        }
+
+        return true;
+    }
+    
+
+    // move right
+    function moveRight() {
+        function moveAllZeroesLeft() {
+            for (let r = 0; r < squares.length; r++) {
+                for (let c = 0; c < squares[r].length - 1; c++) {
+                    if (squares[r][c + 1] === 0) {
+                        const buffer = squares[r][c + 1];
+
+                        squares[r][c + 1] = squares[r][c];
+                        squares[r][c] = buffer;
+                    }
+                }
+            }
+        }
+
+        for (let r = 0; r < squares.length; r++) {
+            moveAllZeroesLeft();
+
+            for (let c = 0; c < squares[r].length - 1; ) {
+                let leftNumber = squares[r][c];
+                let rightNumber = squares[r][c + 1];
+
+                if (leftNumber === 0 || rightNumber === 0) {
+                    c++;
+                } else if (leftNumber === rightNumber) {
+                    const sum = leftNumber + rightNumber;
+
+                    squares[r][c + 1] = sum;
+                    squares[r][c] = 0;
+                    score += sum;
+
+                    c += 2;
+                    clickSound();
+                } else {
+                    c++;
+                }
+            }
+
+            moveAllZeroesLeft();
+        }
+    }
+
+    // move left
+    function moveLeft() {
+        function moveAllZeroesRight() {
+            for (let r = 0; r < squares.length; r++) {
+                for (let c = 0; c < squares[r].length - 1; c++) {
+                    if (squares[r][c] === 0) {
+                        const buffer = squares[r][c];
+
+                        squares[r][c] = squares[r][c + 1];
+                        squares[r][c + 1] = buffer;
+                    }
+                }
+            }
+        }
+
+        for (let r = 0; r < squares.length; r++) {
+            moveAllZeroesRight();
+
+            for (let c = 0; c < squares[r].length; ) {
+                let leftNumber = squares[r][c];
+                let rightNumber = squares[r][c + 1];
+
+                if (leftNumber === 0 || rightNumber === 0) {
+                    c++;
+                } else if (leftNumber === rightNumber) {
+                    const sum = leftNumber + rightNumber;
+
+                    squares[r][c] = sum;
+                    squares[r][c + 1] = 0;
+                    score += sum;
+
+                    c += 2;
+
+                    clickSound();
+                } else {
+                    c++;
+                }
+            }
+
+            moveAllZeroesRight();
         }
     }
 
     //move down
     function moveDown() {
-        for (let i=0; i<4; i++) {
-            let totalOne =squares[i].innerHTML;
-            let totalTwo = squares[i+width].innerHTML;
-            let totalThree = squares[i+(width*2)].innerHTML;
-            let totalFour = squares[i+(width*3)].innerHTML;
-            let column = [parseInt(totalOne), parseInt(totalTwo), parseInt(totalThree), parseInt(totalFour)];
+        function moveAllZeroesUp() {
+            for (let c = 0; c < squares.length; c++) {
+                for (let r = 0; r < squares[c].length - 1; r++) {
+                    if (squares[r + 1][c] === 0) {
+                        const buffer = squares[r + 1][c];
 
-            let filteredColumn = column.filter(num => num);
-            let missing = 4 - filteredColumn.length;
-            let zeroes = Array(missing).fill(0);
-            let newColumn = zeroes.concat(filteredColumn);
+                        squares[r + 1][c] = squares[r][c];
+                        squares[r][c] = buffer;
+                    }
+                }
+            }
+        }
 
-            squares[i].innerHTML = newColumn[0];
-            squares[i+width].innerHTML = newColumn[1];
-            squares[i+(width*2)].innerHTML = newColumn[2];
-            squares[i+(width*3)].innerHTML = newColumn[3];
+        for (let c = 0; c < squares.length; c++) {
+            moveAllZeroesUp();
 
+            for (let r = 0; r < squares[c].length - 1; ) {
+                let upperNumber = squares[r][c];
+                let lowerNumber = squares[r + 1][c];
 
+                if (upperNumber === 0 || lowerNumber === 0) {
+                    r++;
+                } else if (upperNumber === lowerNumber) {
+                    const sum = upperNumber + lowerNumber;
+
+                    squares[r + 1][c] = sum;
+                    squares[r][c] = 0;
+                    score += sum;
+
+                    r += 2;
+
+                    clickSound();
+                } else {
+                    r++;
+                }
+            }
+
+            moveAllZeroesUp();
         }
     }
 
     //move up
     function moveUp() {
-        for (let i=0; i<4; i++) {
-            let totalOne =squares[i].innerHTML;
-            let totalTwo = squares[i+width].innerHTML;
-            let totalThree = squares[i+(width*2)].innerHTML;
-            let totalFour = squares[i+(width*3)].innerHTML;
-            let column = [parseInt(totalOne), parseInt(totalTwo), parseInt(totalThree), parseInt(totalFour)];
+        function moveAllZeroesDown() {
+            for (let c = 0; c < squares.length; c++) {
+                for (let r = 0; r < squares[c].length - 1; r++) {
+                    if (squares[r][c] === 0) {
+                        const buffer = squares[r][c];
 
-            let filteredColumn = column.filter(num => num);
-            let missing = 4 - filteredColumn.length;
-            let zeroes = Array(missing).fill(0);
-            let newColumn = filteredColumn.concat(zeroes);
-
-            squares[i].innerHTML = newColumn[0];
-            squares[i+width].innerHTML = newColumn[1];
-            squares[i+(width*2)].innerHTML = newColumn[2];
-            squares[i+(width*3)].innerHTML = newColumn[3];
-
-
-        }
-    }
-
-   
-    function combineRow() {
-        for (let i=0; i<15; i++) {
-            if (squares[i].innerHTML ===squares[i+1].innerHTML) {
-                let combinedTotal = parseInt(squares[i].innerHTML) + parseInt(squares[i+1].innerHTML)
-                squares[i].innerHTML = combinedTotal;
-                squares[i+1].innerHTML =0;
-                score += combinedTotal;
-                scoreDisplay.innerHTML = score;
-
+                        squares[r][c] = squares[r + 1][c];
+                        squares[r + 1][c] = buffer;
+                    }
+                }
             }
         }
-        checkForWin();
-    }
 
-    function combineColumn() {
-        for (let i=0; i<12; i++) {
-            if (squares[i].innerHTML ===squares[i+width].innerHTML) {
-                let combinedTotal = parseInt(squares[i].innerHTML) + parseInt(squares[i+width].innerHTML)
-                squares[i].innerHTML = combinedTotal;
-                squares[i+width].innerHTML =0;
-                score += combinedTotal;
-                scoreDisplay.innerHTML = score;
+        for (let c = 0; c < squares.length; c++) {
+            moveAllZeroesDown();
 
+            for (let r = 0; r < squares[c].length - 1; ) {
+                let upperNumber = squares[r][c];
+                let lowerNumber = squares[r + 1][c];
+
+                if (upperNumber === 0 || lowerNumber === 0) {
+                    r++;
+                } else if (upperNumber === lowerNumber) {
+                    const sum = upperNumber + lowerNumber;
+
+                    squares[r][c] = sum;
+                    squares[r + 1][c] = 0;
+                    score += sum;
+
+                    r += 2;
+
+                    clickSound();
+                } else {
+                    r++;
+                }
             }
-        }
-        checkForWin();
-    }
 
+            moveAllZeroesDown();
+        }
+    }
+     
     //assign keycodes
     function control(e) {
         if(e.keyCode === 39) {
@@ -170,74 +306,143 @@ document.addEventListener('DOMContentLoaded', ()=>{
         }  else if (e.keyCode === 40) {
             keyDown();
         }
-            
      }
-            
-        
     
     document.addEventListener('keyup', control);
     
 
     function keyRight() {
         moveRight();
-        combineRow();
-        moveRight();
         generate();
-
+        render();
+        checkForWin();
+        checkForGameOver();
     }
 
     function keyLeft() { 
         moveLeft();
-        combineRow();
-        moveLeft();
         generate();
-
+        render();
+        checkForWin();
+        checkForGameOver();
     }
 
     function keyDown() { 
         moveDown();
-        combineColumn();
-        moveDown();
         generate();
-
+        render();
+        checkForWin();
+        checkForGameOver();
     }
 
     function keyUp() { 
         moveUp();
-        combineColumn();
-        moveUp();
         generate();
-
+        render();
+        checkForWin();
+        checkForGameOver();
     }
+
 
     // check for the number 2048 in the squares to win
     function checkForWin() {
-        for (let i=0; i<squares.length; i++) {
-            if (squares[i].innerHTML ==2048){
-                resultDisplay.innerHTML = 'You win!';
-                document.removeEventListener('keyup', control);
+        for (let r = 0; r < squares.length; r++) {
+            for (let c = 0; c < squares[r].length; c++) {
+                if (squares[r][c] === 2048) {
+                    modal.style.display = "block";
+                    result.innerHTML = 'You Win!';
+
+                    document.removeEventListener('keyup', control);
+                }
             }
         }
-    
    }
 
-    //check if there're no zeroes on the board to lose
     function checkForGameOver() {
-        let zeroes = 0;
-         for (let i=0; i< squares.length; i++) {
-            if (squares[i].innerHTML == 0) {
-                zeroes++;
+        if (!checkBoardFull()) {
+            return;
+        }
+
+        for (let r = 0; r < squares.length; r++) {
+            for (let c = 0; c < squares[r].length - 1; c++) {
+                if (r !== squares.length - 1) {
+                    if (squares[r][c] === squares[r + 1][c]) return;
+                }
+
+                if (squares[r][c] === squares[r][c + 1]) return;
             }
-         }
-         if (zeroes === 0) {
-            resultDisplay.innerHTML = 'You Lose!';
-            document.removeEventListener('keyup', control);
-         }
+        }
+
+        modal.style.display = "block";
+        result.innerHTML = 'You Lose!';
  
-
+        document.removeEventListener('keyup', control);
    }
+   // work with the modal
+        const modal = document.getElementById("resultModal");
+        const span = document.getElementsByClassName("close")[0];
+        const result = document.getElementById("infoWinOrLose");
 
+ // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+        modal.style.display = "none";
+    }
 
+ // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+        if (event.target == modal) {
+        modal.style.display = "none";
+     }
+ }
 
-
+    newGameButton.addEventListener('click', startNewGame);
 })
+
+const fetchResults = async () => {
+    const encodedBody = new URLSearchParams({
+        f: 'LOCKGET',
+        n: PROJECT_NAME,
+        p: String(Math.random()),
+    });
+
+    const dataJSON = await fetch(URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        },
+        body: encodedBody,
+    });
+
+    const data = await dataJSON.json();
+
+    return data;
+}
+
+const updateResults = async () => {
+    const encodedBody = new URLSearchParams({
+        f: 'UPDATE',
+        n: PROJECT_NAME,
+        v: JSON.stringify({
+            name: 'dasha',
+            score: '45',
+        }),
+        p: String(Math.random()),
+    });
+
+    const dataJSON = await fetch(URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        },
+        body: encodedBody,
+    });
+
+    const data = await dataJSON.json();
+
+    console.log('data: ', data);
+
+    return data;
+}
+
+// fetchResults();
+updateResults();

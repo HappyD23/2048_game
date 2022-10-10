@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>2048</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="app.js"></script>
+  </head>
+  <body>
+    <div id="game-board">
+      <div id="menu">
+              
+        <div class="score-container">
+          <span id="score-title" >Счёт</span><br>
+          <span id="score">0</span>
+        </div>
+
+        <div class="buttons-container">
+          <button id="new-game">Новая игра</button><br>
+          <button id="record" onclick="viewRecords()"> Таблица рекордов </button>
+        </div>
+
+      </div>
+       <!-- модальное окно с выводом результата игры -->
+      <div id="resultModal" class="modal">
+
+        <!-- содержание модала -->
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <p id="infoWinOrLose"></p>
+          <p id="game_score">Ваш счёт:</p>
+          <label id="nick">Введите Ваш никнейм:</label>
+          <input type="text">
+        </div>
+      
+      </div>
+
+      <!-- модальное окно с выводом таблицы рекордов игры -->
+      <div id="recordsModal" class="modal">
+
+        <!-- содержание модала -->
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <ul id="recordsTable">
+            <li id="top1"></li>
+            <li id="top2"></li>
+            <li id="top3"></li>
+            <li id="top4"></li>
+            <li id="top5"></li>
+          </ul>
+        </div>
+      
+      </div>
+
+               
+       
+       <div class="grid"></div>
+    </div>
+
+    
+  </body>
+</html>
+
