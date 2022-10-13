@@ -41,8 +41,27 @@ button {
     font-weight: bold;
     padding: 1vmin;
     border: none;
+    transition: all 2s ease-in-out;
 }
 
+button:hover {
+	background-color: rgba(0,0,0,0);
+	color: rgb(152, 251, 152);
+	box-shadow: inset 0 0 0 3px rgb(152, 251, 152);
+  cursor: pointer;
+}
+
+#saveResult {
+  border-color: rgb(52, 89, 90);
+  border-style: solid;
+}
+
+button#saveResult:hover {
+  background-color: rgba(0,0,0,0);
+  color: rgb(52, 89, 90);
+  cursor: pointer;
+  
+}
 
 .grid 
 {
@@ -53,15 +72,17 @@ button {
     background-color: rgb(52, 89, 90);
     border-radius: 1vmin;
     padding: 2vmin;
-    position: relative;  
+    position: relative;
+    touch-action: none
 }
 .grid div {
     
     background-color: rgb(152, 251, 152);
     border-radius: 1vmin;
     text-align: center;
-    text-shadow: 2px 2px 3px rgb(52, 89, 90);
+    /* text-shadow: 2px 2px 3px rgb(52, 89, 90); */
     line-height: 15vmin;    
+    -webkit-text-stroke: 1px rgb(52, 89, 90);
    
 }
 
@@ -84,7 +105,7 @@ button {
     background-color: rgba(208, 253, 208);
     color: rgb(52, 89, 90);
     text-align: center;
-    margin: 15% auto; /* 15% from the top and centered */
+    margin: 10% auto; /* 15% from the top and centered */
     padding: 2vmin;
     border: 1vmin solid rgb(52, 89, 90);
     border-radius: 1vmin;
@@ -92,12 +113,15 @@ button {
     
   }
   
-  /* #infoWinOrLose, #recordsTable {
-    color: rgb(52, 89, 90);
-    text-align: center;
-   } */
+  #nick, #gameScore, #recordsTable {
+    text-align: left;
+    font-size: 4.5vmin;
+  }
 
-  /* кнопка закрытия */
+   
+
+
+   /* кнопка закрытия */
   .close {
     color: rgb(52, 89, 90);
     float: right;

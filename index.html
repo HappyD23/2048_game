@@ -18,7 +18,7 @@
 
         <div class="buttons-container">
           <button id="new-game">Новая игра</button><br>
-          <button id="record" onclick="viewRecords()"> Таблица рекордов </button>
+          <button id="record"> Таблица рекордов </button>
         </div>
 
       </div>
@@ -29,9 +29,10 @@
         <div class="modal-content">
           <span class="close">&times;</span>
           <p id="infoWinOrLose"></p>
-          <p id="game_score">Ваш счёт:</p>
-          <label id="nick">Введите Ваш никнейм:</label>
-          <input type="text">
+          <p id="gameScore"></p>
+          <p id="nick">Введите Ваш никнейм:
+          <input id="name" type="text"> </p>
+          <button id="saveResult">Сохранить результат</button>
         </div>
       
       </div>
@@ -42,15 +43,9 @@
         <!-- содержание модала -->
         <div class="modal-content">
           <span class="close">&times;</span>
-          <ul id="recordsTable">
-            <li id="top1"></li>
-            <li id="top2"></li>
-            <li id="top3"></li>
-            <li id="top4"></li>
-            <li id="top5"></li>
-          </ul>
+          <h4>Таблица рекордов:</h4>
+          <ol id="recordsTable"> </ol>
         </div>
-      
       </div>
 
                

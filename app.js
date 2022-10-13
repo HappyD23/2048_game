@@ -1,5 +1,4 @@
-const URL = 'https://fe.it-academy.by/AjaxStringStorage2.php';
-const PROJECT_NAME = 'SHVEIKUS_2048';
+const API_URL = 'https://shveikus-backend.herokuapp.com';
 
 const colorsBack = {
     2: 'rgba(208, 253, 208, 0.09)',
@@ -29,20 +28,99 @@ const colors ={
     2048: 'rgba(208, 253, 208, 0.09)'
 }
 
+function handleSwipes({ elem, onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown }) {
+    const SWIPE_GAP = 100;
+
+    let isPointerDown = false;
+    let pointerId;
+    let startPositionX;
+    let startPositionY;
+
+    elem.addEventListener('pointerdown', (event) => {
+        pointerId = event.pointerId;
+        elem.setPointerCapture(event.pointerId);
+
+        startPositionX = event.layerX;
+        startPositionY = event.layerY;
+        isPointerDown = true;
+    });
+
+    elem.addEventListener('pointermove', ({ layerX, layerY }) => {
+        if (!isPointerDown) return;
+
+        function endSwipe() {
+            if (pointerId) {
+                elem.releasePointerCapture(pointerId);
+            }
+
+            isPointerDown = false;
+        }
+
+        if (layerX - startPositionX > SWIPE_GAP) {
+            onSwipeRight();
+            endSwipe();
+        }
+
+        if (startPositionX - layerX > SWIPE_GAP) {
+            onSwipeLeft();
+            endSwipe();
+        }
+
+        if (layerY - startPositionY > SWIPE_GAP) {
+            onSwipeDown();
+            endSwipe();
+        }
+
+        if (startPositionY - layerY > SWIPE_GAP) {
+            onSwipeUp();
+            endSwipe();
+        }
+    });
+}
+
+async function postResult(name, score) {
+    console.log(name,score);
+    try {
+        await fetch(API_URL + '/results', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name,
+                score,
+            }),
+        });
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function getResults() {
+    try {
+        const response = await fetch(API_URL + '/results', {
+            method: 'GET',
+        });
+
+        return response.json();
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', ()=>{
-   
     const gridDisplay = document.querySelector('.grid');
     const scoreDisplay = document.getElementById('score');
-    const resultDisplay = document.getElementById('result');
     const newGameButton = document.getElementById('new-game');
+    const recordButton = document.getElementById('record');
+    const saveResultButton =document.getElementById('saveResult');
+    const recordsModal = document.getElementById('recordsModal');
+    const recordsModalCloseButton = document.body.querySelector('#recordsModal .close');
+    const resultModal = document.getElementById('resultModal');
+    const gameScore = document.getElementById('gameScore');
+    
 
-    const clickAudio=new Audio('moveCell2.mp3');
-    clickSoundInit();
-
-    function clickSoundInit() {
-        clickAudio.play(); 
-        clickAudio.pause(); 
-    }
+    const clickAudio = new Audio('moveCell2.mp3');
 
     function clickSound() {
         clickAudio.currentTime=0; 
@@ -294,24 +372,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
             moveAllZeroesDown();
         }
     }
-     
-    //assign keycodes
-    function control(e) {
-        if(e.keyCode === 39) {
-           keyRight();
-        }  else if (e.keyCode === 37) {
-            keyLeft(); 
-        }  else if (e.keyCode === 38) {
-            keyUp();
-        }  else if (e.keyCode === 40) {
-            keyDown();
-        }
-     }
-    
-    document.addEventListener('keyup', control);
-    
 
-    function keyRight() {
+    function handleMoveRight() {
         moveRight();
         generate();
         render();
@@ -319,7 +381,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         checkForGameOver();
     }
 
-    function keyLeft() { 
+    function handleMoveLeft() {
         moveLeft();
         generate();
         render();
@@ -327,7 +389,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
         checkForGameOver();
     }
 
-    function keyDown() { 
+    function handleMoveDown() {
         moveDown();
         generate();
         render();
@@ -335,22 +397,37 @@ document.addEventListener('DOMContentLoaded', ()=>{
         checkForGameOver();
     }
 
-    function keyUp() { 
+    function handleMoveUp() {
         moveUp();
         generate();
         render();
         checkForWin();
         checkForGameOver();
     }
-
+     
+    //assign keycodes
+    function control(e) {
+        if(e.keyCode === 39) {
+            handleMoveRight();
+        }  else if (e.keyCode === 37) {
+            handleMoveLeft();
+        }  else if (e.keyCode === 38) {
+            handleMoveUp();
+        }  else if (e.keyCode === 40) {
+            handleMoveDown();
+        }
+     }
+    
+    document.addEventListener('keyup', control);
 
     // check for the number 2048 in the squares to win
     function checkForWin() {
         for (let r = 0; r < squares.length; r++) {
             for (let c = 0; c < squares[r].length; c++) {
                 if (squares[r][c] === 2048) {
-                    modal.style.display = "block";
+                    modalResult.style.display = "block";
                     result.innerHTML = 'You Win!';
+                    gameScore.innerHTML = score;
 
                     document.removeEventListener('keyup', control);
                 }
@@ -364,85 +441,84 @@ document.addEventListener('DOMContentLoaded', ()=>{
         }
 
         for (let r = 0; r < squares.length; r++) {
-            for (let c = 0; c < squares[r].length - 1; c++) {
+            for (let c = 0; c < squares[r].length; c++) {
                 if (r !== squares.length - 1) {
                     if (squares[r][c] === squares[r + 1][c]) return;
                 }
 
-                if (squares[r][c] === squares[r][c + 1]) return;
+                if (c !== squares[r].length - 1) {
+                    if (squares[r][c] === squares[r][c + 1]) return;
+                }
             }
         }
 
-        modal.style.display = "block";
+        modalResult.style.display = "block";
         result.innerHTML = 'You Lose!';
- 
-        document.removeEventListener('keyup', control);
-   }
-   // work with the modal
-        const modal = document.getElementById("resultModal");
-        const span = document.getElementsByClassName("close")[0];
-        const result = document.getElementById("infoWinOrLose");
+        gameScore.innerHTML = 'Ваш счет: ' + score;
 
- // When the user clicks on <span> (x), close the modal
-        span.onclick = function() {
-        modal.style.display = "none";
+ 
+        
+    }
+    
+    saveResultButton.addEventListener('click', handleSubmit);
+
+    function handleSubmit() {
+        let name = document.getElementById('name').value;
+        postResult(name, score);
     }
 
- // When the user clicks anywhere outside of the modal, close it
-        window.onclick = function(event) {
-        if (event.target == modal) {
-        modal.style.display = "none";
-     }
- }
+   // work with the modal
+    const modalResult = document.getElementById("resultModal");
+    const span = document.getElementsByClassName("close")[0];
+    const result = document.getElementById("infoWinOrLose");
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() {
+        modalResult.style.display = "none";
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+        if (event.target === modalResult || event.target ===  recordsModal) {
+            modalResult.style.display = "none";
+            recordsModal.style.display = "none";
+            
+        }
+    }
+
+    async function viewRecords() {
+        const results = await getResults();
+        const recordsTable = document.getElementById('recordsTable');
+
+        const resultElements = results.slice(0, 6).map(({ name, score }, idx) => {
+            const li = document.createElement('li');
+
+            li.className = `top${idx}`;
+            li.innerHTML = `${name}: ${score}`;
+
+            return li;
+        });
+
+        recordsTable.replaceChildren(...resultElements);
+        recordsModal.style.display = "block";
+
+    }
 
     newGameButton.addEventListener('click', startNewGame);
+    recordButton.addEventListener('click', viewRecords);
+    recordsModalCloseButton.addEventListener('click', () => {
+        recordsModal.style.display = "none";
+    })
+
+    window.onbeforeunload = function() {
+        return "Прогресс игры не сохранится, точно хотите обновить страницу?";
+      };
+
+    handleSwipes({
+        elem: gridDisplay,
+        onSwipeLeft: handleMoveLeft,
+        onSwipeRight: handleMoveRight,
+        onSwipeUp: handleMoveUp,
+        onSwipeDown: handleMoveDown,
+    });
 })
-
-const fetchResults = async () => {
-    const encodedBody = new URLSearchParams({
-        f: 'LOCKGET',
-        n: PROJECT_NAME,
-        p: String(Math.random()),
-    });
-
-    const dataJSON = await fetch(URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-        },
-        body: encodedBody,
-    });
-
-    const data = await dataJSON.json();
-
-    return data;
-}
-
-const updateResults = async () => {
-    const encodedBody = new URLSearchParams({
-        f: 'UPDATE',
-        n: PROJECT_NAME,
-        v: JSON.stringify({
-            name: 'dasha',
-            score: '45',
-        }),
-        p: String(Math.random()),
-    });
-
-    const dataJSON = await fetch(URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-        },
-        body: encodedBody,
-    });
-
-    const data = await dataJSON.json();
-
-    console.log('data: ', data);
-
-    return data;
-}
-
-// fetchResults();
-updateResults();
